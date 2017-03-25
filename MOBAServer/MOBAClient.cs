@@ -15,9 +15,14 @@ namespace MOBAServer
         /// 账号逻辑
         /// </summary>
         private IOpHandler accountOpHandler;
+        /// <summary>
+        /// 角色
+        /// </summary>
+        private IOpHandler playerOpHandler;
         public MOBAClient(InitRequest initRequest) : base(initRequest)
         {
             accountOpHandler = new AccountHandler();
+            playerOpHandler = new PlayerHandler();
         }
         /// <summary>
         /// 客户端请求
@@ -33,6 +38,9 @@ namespace MOBAServer
                 case OperationCode.AccountCode:
                     accountOpHandler.OnRequest(this, subCode, operationRequest);
                     break;
+                case OperationCode.PlayerCode:
+                    playerOpHandler.OnRequest(this, subCode, operationRequest);
+                    break;
             }
         }
         /// <summary>
@@ -42,6 +50,8 @@ namespace MOBAServer
         /// <param name="reasonDetail"></param>
         protected override void OnDisconnect(DisconnectReason reasonCode, string reasonDetail)
         {
+            //倒序
+            playerOpHandler.OnDisConnect(this);
             accountOpHandler.OnDisConnect(this);
         }
     }

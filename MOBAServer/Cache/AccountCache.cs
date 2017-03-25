@@ -80,5 +80,19 @@ namespace MOBAServer.Cache
                 clients.Remove(client);
         }
         #endregion
+        /// <summary>
+        /// 根据连接对象获取账号ID
+        /// </summary>
+        /// <param name="client"></param>
+        /// <returns>有就返回，没有返回-1</returns>
+        public int GetID(MOBAClient client)
+        {
+            if (!clients.ContainsKey(client))
+                return -1;
+            string account = clients[client];
+            if (!accountModels.ContainsKey(account))
+                return -1;
+            return accountModels[account].Id;
+        }
     }
 }

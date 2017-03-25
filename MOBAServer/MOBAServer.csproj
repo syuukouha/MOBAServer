@@ -62,11 +62,14 @@
   <ItemGroup>
     <Compile Include="Cache\AccountCache.cs" />
     <Compile Include="Cache\Caches.cs" />
+    <Compile Include="Cache\PlayerCache.cs" />
     <Compile Include="Logic\AccountHandler.cs" />
     <Compile Include="Logic\IOpHandler.cs" />
+    <Compile Include="Logic\PlayerHandler.cs" />
     <Compile Include="MOBAApplication.cs" />
     <Compile Include="MOBAClient.cs" />
     <Compile Include="Model\AccountModel.cs" />
+    <Compile Include="Model\PlayerModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SingleSend.cs" />
   </ItemGroup>

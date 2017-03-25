@@ -14,5 +14,9 @@ namespace MOBACommon.Codes
         /// 账号
         /// </summary>
         public const byte AccountCode = 0;
+        /// <summary>
+        /// 玩家
+        /// </summary>
+        public const byte PlayerCode = 1;
     }
 }
