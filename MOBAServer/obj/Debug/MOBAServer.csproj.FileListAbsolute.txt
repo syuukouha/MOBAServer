@@ -1,0 +1,6 @@
+E:\Photon-OnPremise-Server-SDK_v4-0-29-11263\deploy\MOBAServer\bin\log4net.config
+E:\Photon-OnPremise-Server-SDK_v4-0-29-11263\deploy\MOBAServer\bin\MOBAServer.dll
+E:\Photon-OnPremise-Server-SDK_v4-0-29-11263\deploy\MOBAServer\bin\MOBAServer.pdb
+E:\MOBAServer\MOBAServer\obj\Debug\MOBAServer.csprojResolveAssemblyReference.cache
+E:\MOBAServer\MOBAServer\obj\Debug\MOBAServer.dll
+E:\MOBAServer\MOBAServer\obj\Debug\MOBAServer.pdb
