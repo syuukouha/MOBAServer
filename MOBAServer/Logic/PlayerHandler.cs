@@ -35,12 +35,26 @@ namespace MOBAServer.Logic
                 case OpPlayer.Online:
                     OnPlayerOnline(client);
                     break;
+                case OpPlayer.AddFriend:
+                    OnAddFriend(client, request[0].ToString());
+                    break;
+                case OpPlayer.AddFriendToClient:
+                    OnAddFriendToClient(client, (bool) request[0], (int) request[1]);
+                    break;
             }
         }
 
-
         public void OnDisConnect(MOBAClient client)
         {
+            //下线的时候，通知在线好友，显示离线状态
+            PlayerModel playerModel = playerCache.GetPlayerModel(client);
+            foreach (int friendID in playerModel.FriendIdList)
+            {
+                if (!playerCache.IsOnLine(friendID))    //因为GetPlayerModel，GetClient是获取在线玩家的数据
+                    continue;
+                MOBAClient friendClient = playerCache.GetClient(friendID);
+                Send(friendClient, OperationCode.PlayerCode, OpPlayer.FriendOnlineState, 1, "好友玩家下线", playerModel.Id);
+            }
             playerCache.OffLine(client);
         }
         /// <summary>
@@ -86,10 +100,100 @@ namespace MOBAServer.Logic
         {
             int accountID = accountCache.GetID(client);
             int playerID = playerCache.GetID(accountID);
+            //防止重复在线
             if (playerCache.IsOnLine(client))
                 return;
+            //上线
             playerCache.OnLine(client, playerID);
-            PlayerModel playerModel = playerCache.GetPlayerModel(playerID);
+            //上线的时候，通知在线好友，显示在线状态
+            PlayerModel playerModel = playerCache.GetPlayerModel(client);
+            foreach (int friendID in playerModel.FriendIdList)
+            {
+                if (!playerCache.IsOnLine(friendID))    //因为GetPlayerModel，GetClient是获取在线玩家的数据
+                    continue;
+                MOBAClient friendClient = playerCache.GetClient(friendID);
+                Send(friendClient, OperationCode.PlayerCode, OpPlayer.FriendOnlineState, 0, "好友玩家上线", playerModel.Id);
+            }
+            PlayerDto playerDto = ToDto(playerCache.GetPlayerModel(playerID));
+
+            //发送
+            Send(client, OperationCode.PlayerCode, OpPlayer.Online, 0, "上线成功", JsonMapper.ToJson(playerDto));
+        }
+
+        /// <summary>
+        /// 添加好友的处理
+        /// </summary>
+        /// <param name="name"></param>
+        private void OnAddFriend(MOBAClient client,string name)
+        {
+            //获取添加好友的数据模型
+            PlayerModel friendModel = playerCache.GetPlayerModel(name);
+            //获取当前玩家的数据模型
+            PlayerModel playerModel = playerCache.GetPlayerModel(client);
+
+            if (friendModel == null)
+            {
+                Send(client, OperationCode.PlayerCode, OpPlayer.AddFriend, -1, "没有此玩家");
+                return;
+            }
+            //如果添加的是自己则返回
+            if (playerCache.GetPlayerModel(client).Id.Equals(friendModel.Id))
+            {
+                Send(client, OperationCode.PlayerCode, OpPlayer.AddFriend, -3, "不能添加自己为好友");
+                return;
+            }
+            //如果添加的是已经是好友的玩家
+            int playerID = playerCache.GetID(client);
+            if (friendModel.FriendIdList.Contains(playerID))
+            {
+                Send(client, OperationCode.PlayerCode, OpPlayer.AddFriend, -4, "此玩家已经是你的好友");
+                return;
+            }
+            //如果能获取到数据模型，先判断他是否在线
+            bool isOnline = playerCache.IsOnLine(friendModel.Id);
+            //不在线 回传不在线
+            if (!isOnline)
+            {
+                Send(client, OperationCode.PlayerCode, OpPlayer.AddFriend, -1, "此玩家不在线");
+            }
+            //在线 给模型对应的客户端发消息
+            MOBAClient friendClient = playerCache.GetClient(friendModel.Id);
+
+            Send(friendClient, OperationCode.PlayerCode, OpPlayer.AddFriendToClient, 0, "是否添加好友?",
+                JsonMapper.ToJson(ToDto(playerModel)));
+        }
+
+        /// <summary>
+        /// 添加好友结果的处理
+        /// </summary>
+        /// <param name="result"></param>
+        private void OnAddFriendToClient(MOBAClient client,bool result,int requestID)
+        {
+            MOBAClient requestClient = playerCache.GetClient(requestID);
+
+            if (result)
+            {
+                //同意了，保存数据
+                int playerID = playerCache.GetID(client);
+                playerCache.AddFriend(playerID, requestID);
+                Send(client, OperationCode.PlayerCode, OpPlayer.AddFriendToClient, 1, "添加成功",
+                    JsonMapper.ToJson(ToDto(playerCache.GetPlayerModel(client))));
+                Send(requestClient, OperationCode.PlayerCode, OpPlayer.AddFriendToClient, 1, "添加成功",
+                    JsonMapper.ToJson(ToDto(playerCache.GetPlayerModel(requestClient))));
+            }
+            else
+            {
+                //拒绝了，就回传给原来的客户端，告诉他被拒绝了
+                Send(requestClient, OperationCode.PlayerCode, OpPlayer.AddFriendToClient, -1, "此玩家拒绝你的请求");
+            }
+        }
+        /// <summary>
+        /// 赋值Dto
+        /// </summary>
+        /// <param name="playerModel"></param>
+        /// <returns></returns>
+        private PlayerDto ToDto(PlayerModel playerModel)
+        {
             PlayerDto playerDto = new PlayerDto()
             {
                 ID = playerModel.Id,
@@ -100,10 +204,26 @@ namespace MOBAServer.Logic
                 WinCount = playerModel.WinCount,
                 LoseCount = playerModel.LoseCount,
                 RunCount = playerModel.RunCount,
-                FriendIDList = playerModel.FriendIdList,
-                HeroIDList = playerModel.HeroIdList
+                HeroID = new int[playerModel.HeroIdList.Count],
+                Friends = new FriendDto[playerModel.FriendIdList.Count]
             };
-            Send(client, OperationCode.PlayerCode, OpPlayer.Online, 0, "上线成功", JsonMapper.ToJson(playerDto));
+            //英雄ID列表
+            for (int i = 0; i < playerModel.HeroIdList.Count; i++)
+            {
+                playerDto.HeroID[i] = playerModel.HeroIdList[i];
+            }
+            //好友ID列表
+            FriendDto[] friendDtos = new FriendDto[playerModel.FriendIdList.Count];
+            for (int i = 0; i < playerModel.FriendIdList.Count; i++)
+            {
+                int id = playerModel.FriendIdList[i];
+                PlayerModel friendModel = playerCache.GetPlayerModel(id);
+                bool isOnline = playerCache.IsOnLine(id);
+                friendDtos[i] = new FriendDto(id, friendModel.Name, isOnline);
+            }
+            //赋值给playerDto
+            playerDto.Friends = friendDtos;
+            return playerDto;
         }
 
     }

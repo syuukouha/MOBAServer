@@ -43,11 +43,11 @@ namespace MOBAServer.Model
         /// <summary>
         /// 英雄ID列表
         /// </summary>
-        private string heroIDList;
+        private List<int> heroIDList;
         /// <summary>
         /// 好友ID列表
         /// </summary>
-        private string friendIDList;
+        private List<int> friendIDList;
         private int accountID;
 
         #region Property
@@ -99,13 +99,13 @@ namespace MOBAServer.Model
             set { runCount = value; }
         }
 
-        public string HeroIdList
+        public List<int> HeroIdList
         {
             get { return heroIDList; }
             set { heroIDList = value; }
         }
 
-        public string FriendIdList
+        public List<int> FriendIdList
         {
             get { return friendIDList; }
             set { friendIDList = value; }
@@ -133,8 +133,8 @@ namespace MOBAServer.Model
             WinCount = 0;
             LoseCount = 0;
             RunCount = 0;
-            HeroIdList = "0,1";
-            FriendIdList = string.Empty;
+            HeroIdList = new List<int> {0, 1};
+            FriendIdList = new List<int>();
         }
     }
 }

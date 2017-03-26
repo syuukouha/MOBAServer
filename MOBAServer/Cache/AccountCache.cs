@@ -17,7 +17,7 @@ namespace MOBAServer.Cache
         /// <summary>
         /// 账号和模型的映射
         /// </summary>
-        private SynchronizedDictionary<string, AccountModel> _accountModels = new SynchronizedDictionary<string, AccountModel>();
+        private SynchronizedDictionary<string, AccountModel> accountModels = new SynchronizedDictionary<string, AccountModel>();
         /// <summary>
         /// 匹配账号密码是否存在且正确
         /// </summary>
@@ -26,9 +26,9 @@ namespace MOBAServer.Cache
         /// <returns></returns>
         public bool Match(string account, string password)
         {
-            if (!_accountModels.ContainsKey(account))
+            if (!accountModels.ContainsKey(account))
                 return false;
-            return _accountModels[account].Password == password;
+            return accountModels[account].Password == password;
         }
         //模拟ID
         private int id = 0;
@@ -44,7 +44,7 @@ namespace MOBAServer.Cache
             if (Has(account))
                 return false;
             //添加
-            _accountModels[account] = new AccountModel(id, account, password);
+            accountModels[account] = new AccountModel(id, account, password);
             id++;
             return true;
         }
@@ -55,12 +55,12 @@ namespace MOBAServer.Cache
         /// <returns></returns>
         public bool Has(string account)
         {
-            return _accountModels.ContainsKey(account);
+            return accountModels.ContainsKey(account);
         }
         #endregion
 
         #region 在线玩家
-        private Dictionary<MOBAClient,string> _clients = new Dictionary<MOBAClient,string>();
+        private Dictionary<MOBAClient,string> clients = new Dictionary<MOBAClient,string>();
 
         /// <summary>
         /// 是否在线
@@ -69,21 +69,21 @@ namespace MOBAServer.Cache
         /// <returns></returns>
         public bool IsOnLine(string account)
         {
-            return _clients.ContainsValue(account);
+            return clients.ContainsValue(account);
         }
         //添加在线客户端
         public bool OnLineClient(string account, MOBAClient client)
         {
             if (IsOnLine(account))
                 return false;
-            _clients[client] = account;
+            clients[client] = account;
             return true;
         }
         //删除在线客户端
         public void OffLineClient(MOBAClient client)
         {
-            if (_clients.ContainsKey(client))
-                _clients.Remove(client);
+            if (clients.ContainsKey(client))
+                clients.Remove(client);
         }
         #endregion
         /// <summary>
@@ -93,12 +93,12 @@ namespace MOBAServer.Cache
         /// <returns>有就返回，没有返回-1</returns>
         public int GetID(MOBAClient client)
         {
-            if (!_clients.ContainsKey(client))
+            if (!clients.ContainsKey(client))
                 return -1;
-            string account = _clients[client];
-            if (!_accountModels.ContainsKey(account))
+            string account = clients[client];
+            if (!accountModels.ContainsKey(account))
                 return -1;
-            return _accountModels[account].Id;
+            return accountModels[account].Id;
         }
     }
 }

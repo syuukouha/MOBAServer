@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,9 +21,9 @@ namespace MOBAServer.Cache
         /// 玩家ID对应的玩家数据
         /// </summary>
         //private Dictionary<int,PlayerModel> playerModels = new Dictionary<int, PlayerModel>();
-        private SynchronizedDictionary<int, PlayerModel> playerModels = new SynchronizedDictionary<int, PlayerModel>();
+        private ConcurrentDictionary<int, PlayerModel> playerModels = new ConcurrentDictionary<int, PlayerModel>();
         /// <summary>
-        /// 主键ID
+        /// 模拟主键ID
         /// </summary>
         private int index = 0;
         /// <summary>
@@ -35,6 +36,7 @@ namespace MOBAServer.Cache
             PlayerModel playerModel = new PlayerModel(index, name, accountID);
             accountPlayers.TryAdd(accountID, playerModel.Id);
             playerModels.TryAdd(playerModel.Id, playerModel);
+            index++;
         }
         /// <summary>
         /// 判断是否存在角色
@@ -44,6 +46,17 @@ namespace MOBAServer.Cache
         public bool Has(int accountID)
         {
             return accountPlayers.ContainsKey(accountID);
+        }
+        /// <summary>
+        /// 添加好友数据
+        /// </summary>
+        /// <param name="playerID"></param>
+        public void AddFriend(int playerID,int friendID)
+        {
+            PlayerModel playerModel = playerModels[playerID];
+            playerModel.FriendIdList.Add(friendID);
+            PlayerModel friendModel = playerModels[friendID];
+            friendModel.FriendIdList.Add(playerID);
         }
         /// <summary>
         /// 获取玩家ID
@@ -56,6 +69,14 @@ namespace MOBAServer.Cache
             return playerID;
         }
         /// <summary>
+        /// 获取在线玩家ID
+        /// </summary>
+        /// <param name="client"></param>
+        public int GetID(MOBAClient client)
+        {
+            return _onLinePlayers[client];
+        }
+        /// <summary>
         /// 获取玩家数据
         /// </summary>
         /// <param name="playerID"></param>
@@ -63,6 +84,45 @@ namespace MOBAServer.Cache
         public PlayerModel GetPlayerModel(int playerID)
         {
             return playerModels[playerID];
+        }
+        /// <summary>
+        /// 获取玩家数据
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public PlayerModel GetPlayerModel(string name)
+        {
+            foreach (var playerModel in playerModels.Values)
+            {
+                if (playerModel.Name == name)
+                    return playerModel;
+            }
+            return null;
+        }
+        /// <summary>
+        /// 获取玩家数据
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
+        public PlayerModel GetPlayerModel(MOBAClient client)
+        {
+            return playerModels[_onLinePlayers[client]];
+        }
+        /// <summary>
+        /// 根据玩家ID获取对应的客户端
+        /// </summary>
+        /// <param name="playerID"></param>
+        /// <returns></returns>
+        public MOBAClient GetClient(int playerID)
+        {
+            foreach (MOBAClient client in _onLinePlayers.Keys)
+            {
+                if (_onLinePlayers[client].Equals(playerID))
+                {
+                    return client;
+                }
+            }
+            return null;
         }
         #endregion
         #region 在线
@@ -84,12 +144,26 @@ namespace MOBAServer.Cache
         public void OffLine(MOBAClient client)
         {
             if (IsOnLine(client))
-                _onLinePlayers.Remove(client);
+                if (_onLinePlayers.ContainsKey(client))
+                    _onLinePlayers.Remove(client);
         }
-
+        /// <summary>
+        /// 玩家是否在线
+        /// </summary>
+        /// <param name="client">客户端</param>
+        /// <returns></returns>
         public bool IsOnLine(MOBAClient client)
         {
             return _onLinePlayers.ContainsKey(client);
+        }
+        /// <summary>
+        /// 玩家是否在线
+        /// </summary>
+        /// <param name="playerID">玩家ID</param>
+        /// <returns></returns>
+        public bool IsOnLine(int playerID)
+        {
+            return _onLinePlayers.ContainsValue(playerID);
         }
         #endregion
     }

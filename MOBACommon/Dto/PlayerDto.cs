@@ -39,14 +39,16 @@ namespace MOBACommon.Dto
         /// 逃跑场次
         /// </summary>
         public int RunCount;
+
         /// <summary>
         /// 英雄ID列表
         /// </summary>
-        public string HeroIDList;
+        public int[] HeroID;
+
         /// <summary>
-        /// 好友ID列表
+        /// 好友
         /// </summary>
-        public string FriendIDList;
+        public FriendDto[] Friends;
 
         public PlayerDto()
         {

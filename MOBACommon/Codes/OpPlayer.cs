@@ -23,8 +23,17 @@ namespace MOBACommon.Codes
         /// </summary>
         public const byte Online = 2;
         /// <summary>
-        /// 添加好友
+        /// 添加好友(向服务器请求)
         /// </summary>
         public const byte AddFriend = 3;
+        /// <summary>
+        /// 添加好友（服务器给客户端请求）
+        /// </summary>
+        public const byte AddFriendToClient = 4;
+        /// <summary>
+        /// 好友在线状态变更
+        /// </summary>
+        public const byte FriendOnlineState = 5;
+
     }
 }
