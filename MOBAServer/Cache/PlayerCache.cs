@@ -15,12 +15,10 @@ namespace MOBAServer.Cache
         /// <summary>
         /// 账号ID对应的玩家ID
         /// </summary>
-        //private Dictionary<int, int> accountPlayers = new Dictionary<int, int>();
         private SynchronizedDictionary<int, int> accountPlayers = new SynchronizedDictionary<int, int>();
         /// <summary>
         /// 玩家ID对应的玩家数据
         /// </summary>
-        //private Dictionary<int,PlayerModel> playerModels = new Dictionary<int, PlayerModel>();
         private ConcurrentDictionary<int, PlayerModel> playerModels = new ConcurrentDictionary<int, PlayerModel>();
         /// <summary>
         /// 模拟主键ID
@@ -100,9 +98,9 @@ namespace MOBAServer.Cache
             return null;
         }
         /// <summary>
-        /// 获取玩家数据
+        /// 获取在线玩家数据
         /// </summary>
-        /// <param name="name"></param>
+        /// <param name="client"></param>
         /// <returns></returns>
         public PlayerModel GetPlayerModel(MOBAClient client)
         {

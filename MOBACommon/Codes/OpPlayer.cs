@@ -34,6 +34,18 @@ namespace MOBACommon.Codes
         /// 好友在线状态变更
         /// </summary>
         public const byte FriendOnlineState = 5;
+        /// <summary>
+        /// 匹配开始
+        /// </summary>
+        public const byte MatchStart = 6;
+        /// <summary>
+        /// 匹配完成
+        /// </summary>
+        public const byte MatchComplete = 7;
+        /// <summary>
+        /// 匹配终止
+        /// </summary>
+        public const byte MatchStop = 8;
 
     }
 }

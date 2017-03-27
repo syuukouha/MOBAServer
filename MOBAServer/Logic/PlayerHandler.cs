@@ -8,6 +8,7 @@ using MOBACommon.Codes;
 using MOBACommon.Dto;
 using MOBAServer.Cache;
 using MOBAServer.Model;
+using MOBAServer.Room;
 using Photon.SocketServer;
 
 namespace MOBAServer.Logic
@@ -22,6 +23,14 @@ namespace MOBAServer.Logic
         /// 角色的缓存
         /// </summary>
         private PlayerCache playerCache = Caches.Player;
+
+        /// <summary>
+        /// 匹配的缓存
+        /// </summary>
+        private MatchCache matchCache = Caches.Match;
+
+
+
         public void OnRequest(MOBAClient client, byte subCode, OperationRequest request)
         {
             switch (subCode)
@@ -41,20 +50,35 @@ namespace MOBAServer.Logic
                 case OpPlayer.AddFriendToClient:
                     OnAddFriendToClient(client, (bool) request[0], (int) request[1]);
                     break;
+                case OpPlayer.MatchStart:
+                    OnMatchStart(client,(int)request[0]);
+                    break;
+                case OpPlayer.MatchStop:
+                    OnMatchStop(client, (int)request[0]);
+                    break;
+
             }
         }
 
+
+        
         public void OnDisConnect(MOBAClient client)
         {
             //下线的时候，通知在线好友，显示离线状态
-            PlayerModel playerModel = playerCache.GetPlayerModel(client);
-            foreach (int friendID in playerModel.FriendIdList)
+            int accountID = accountCache.GetID(client);
+            int playerID = playerCache.GetID(accountID);
+            PlayerModel playerModel = playerCache.GetPlayerModel(playerID);
+            if (playerModel != null)
             {
-                if (!playerCache.IsOnLine(friendID))    //因为GetPlayerModel，GetClient是获取在线玩家的数据
-                    continue;
-                MOBAClient friendClient = playerCache.GetClient(friendID);
-                Send(friendClient, OperationCode.PlayerCode, OpPlayer.FriendOnlineState, 1, "好友玩家下线", playerModel.Id);
+                foreach (int friendID in playerModel.FriendIdList)
+                {
+                    if (!playerCache.IsOnLine(friendID))    //因为GetPlayerModel，GetClient是获取在线玩家的数据
+                        continue;
+                    MOBAClient friendClient = playerCache.GetClient(friendID);
+                    Send(friendClient, OperationCode.PlayerCode, OpPlayer.FriendOnlineState, 1, "好友玩家下线", playerModel.Id);
+                }
             }
+            matchCache.OffLine(client, playerID);
             playerCache.OffLine(client);
         }
         /// <summary>
@@ -106,13 +130,16 @@ namespace MOBAServer.Logic
             //上线
             playerCache.OnLine(client, playerID);
             //上线的时候，通知在线好友，显示在线状态
-            PlayerModel playerModel = playerCache.GetPlayerModel(client);
-            foreach (int friendID in playerModel.FriendIdList)
+            PlayerModel playerModel = playerCache.GetPlayerModel(playerID);
+            if (playerModel != null)
             {
-                if (!playerCache.IsOnLine(friendID))    //因为GetPlayerModel，GetClient是获取在线玩家的数据
-                    continue;
-                MOBAClient friendClient = playerCache.GetClient(friendID);
-                Send(friendClient, OperationCode.PlayerCode, OpPlayer.FriendOnlineState, 0, "好友玩家上线", playerModel.Id);
+                foreach (int friendID in playerModel.FriendIdList)
+                {
+                    if (!playerCache.IsOnLine(friendID))    //因为GetPlayerModel，GetClient是获取在线玩家的数据
+                        continue;
+                    MOBAClient friendClient = playerCache.GetClient(friendID);
+                    Send(friendClient, OperationCode.PlayerCode, OpPlayer.FriendOnlineState, 0, "好友玩家上线", playerModel.Id);
+                }
             }
             PlayerDto playerDto = ToDto(playerCache.GetPlayerModel(playerID));
 
@@ -187,6 +214,41 @@ namespace MOBAServer.Logic
                 Send(requestClient, OperationCode.PlayerCode, OpPlayer.AddFriendToClient, -1, "此玩家拒绝你的请求");
             }
         }
+        /// <summary>
+        /// 开始匹配的处理
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="isSingle"></param>
+        /// <param name="playerID"></param>
+        private void OnMatchStart(MOBAClient client, int playerID)
+        {
+            //非法操作检测
+            if (playerCache.GetID(client) != playerID)
+                return;
+            MatchRoom room = matchCache.EnterMatch(client, playerID);
+            Send(client, OperationCode.PlayerCode, OpPlayer.MatchStart, 0, "开始匹配成功");
+            //如果房间满了，就开始选人
+            if (room.RoomIsFull())
+            {
+                //通知房间内所有人进入选人界面
+                room.Broadcast(OperationCode.PlayerCode, OpPlayer.MatchComplete, 1, "开始选人");
+                //删除房间
+                matchCache.DeleteRoom(room);
+            }
+        }
+        /// <summary>
+        /// 离开匹配的处理
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="playerID"></param>
+        private void OnMatchStop(MOBAClient client, int playerID)
+        {
+            bool result = matchCache.LeaveMatch(client, playerID);
+            if (result)
+                Send(client, OperationCode.PlayerCode, OpPlayer.MatchStop, 0, "离开匹配成功");
+
+        }
+
         /// <summary>
         /// 赋值Dto
         /// </summary>
