@@ -83,7 +83,7 @@ namespace MOBAServer.Room
         /// <param name="opCode">操作码</param>
         /// <param name="subCode">子操作码</param>
         /// <param name="parameters">参数</param>
-        public void Broadcast(byte opCode, byte subCode, short returnCode, string message, params object[] parameters)
+        public void Broadcast(byte opCode, byte subCode, short returnCode, string message, TClient exceptClient,params object[] parameters)
         {
             OperationResponse response = new OperationResponse();
             response.OperationCode = opCode;
@@ -97,6 +97,8 @@ namespace MOBAServer.Room
             response.DebugMessage = message;
             foreach (TClient client in ClientList)
             {
+                if (client == exceptClient)
+                    continue;
                 client.SendOperationResponse(response, new SendParameters());
             }
         }

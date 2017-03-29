@@ -10,29 +10,8 @@ using MOBAServer.Room;
 
 namespace MOBAServer.Cache
 {
-    public class MatchCache
+    public class MatchCache:RoomCacheBase<MatchRoom>
     {
-        #region 数据
-        /// <summary>
-        /// 房间ID对应的房间数据
-        /// </summary>
-        private ConcurrentDictionary<int, MatchRoom> matchRooms = new ConcurrentDictionary<int, MatchRoom>();
-        /// <summary>
-        /// 玩家ID对应的房间ID
-        /// </summary>
-        private SynchronizedDictionary<int, int> roomIDs = new SynchronizedDictionary<int, int>();
-
-        /// <summary>
-        /// 重用的队列
-        /// </summary>
-        ConcurrentQueue<MatchRoom> rooms = new ConcurrentQueue<MatchRoom>();
-
-        /// <summary>
-        /// 主键ID
-        /// </summary>
-        private int index = 0;
-        #endregion
-
         #region 匹配
         /// <summary>
         /// 玩家进入匹配队列
@@ -43,7 +22,7 @@ namespace MOBAServer.Cache
         {
             MatchRoom room;
             //存在等待的房间
-            foreach (MatchRoom matchRoom in matchRooms.Values)
+            foreach (MatchRoom matchRoom in Rooms.Values)
             {
                 if (matchRoom.RoomIsFull())
                     continue;
@@ -60,7 +39,7 @@ namespace MOBAServer.Cache
             {
                 rooms.TryDequeue(out room);
                 //添加映射关系
-                matchRooms.TryAdd(room.ID, room);
+                Rooms.TryAdd(room.ID, room);
                 roomIDs.TryAdd(playerID, room.ID);
                 //玩家进入房间
                 room.Enter(client, playerID);
@@ -69,7 +48,7 @@ namespace MOBAServer.Cache
             room = new MatchRoom(index, 2);
             index++;
             //添加映射关系
-            matchRooms.TryAdd(room.ID, room);
+            Rooms.TryAdd(room.ID, room);
             roomIDs.TryAdd(playerID, room.ID);
             //玩家进入房间
             room.Enter(client, playerID);
@@ -89,14 +68,14 @@ namespace MOBAServer.Cache
             int roomID = roomIDs[playerID];
             MatchRoom room;
             //检测 （防止多线程造成不必要的错误）
-            if (!matchRooms.TryGetValue(roomID, out room))
+            if (!Rooms.TryGetValue(roomID, out room))
                 return false;
             room.Leave(client, playerID);
             if (room.RoomIsEmpty())
             {
                 //移除映射关系
                 roomIDs.Remove(playerID);
-                matchRooms.TryRemove(room.ID, out room);
+                Rooms.TryRemove(room.ID, out room);
                 //移除定时任务
                 if (!room.Guid.Equals(Guid.NewGuid()))
                     room.Timer.RemoveAction(room.Guid);
@@ -121,7 +100,7 @@ namespace MOBAServer.Cache
                 roomIDs.Remove(id);
             }
             //移除房间ID和房间的映射
-            matchRooms.TryRemove(room.ID, out room);
+            Rooms.TryRemove(room.ID, out room);
             //清空房间信息
             room.RedTeamIdList.Clear();
             room.BlueTeamIdList.Clear();

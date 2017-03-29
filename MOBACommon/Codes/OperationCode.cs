@@ -18,5 +18,9 @@ namespace MOBACommon.Codes
         /// 玩家
         /// </summary>
         public const byte PlayerCode = 1;
+        /// <summary>
+        /// 选人
+        /// </summary>
+        public const byte SelectCode = 2;
     }
 }

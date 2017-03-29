@@ -15,6 +15,8 @@ namespace MOBAServer.Logic
 {
     class PlayerHandler:SingleSend,IOpHandler
     {
+        public Action<List<int>, List<int>> StartSelectAction;
+
         /// <summary>
         /// 账号的缓存
         /// </summary>
@@ -231,7 +233,8 @@ namespace MOBAServer.Logic
             if (room.RoomIsFull())
             {
                 //通知房间内所有人进入选人界面
-                room.Broadcast(OperationCode.PlayerCode, OpPlayer.MatchComplete, 1, "开始选人");
+                room.Broadcast(OperationCode.PlayerCode, OpPlayer.MatchComplete, 1, "是否进入选人界面(10秒)",null);
+                StartSelectAction(room.RedTeamIdList, room.BlueTeamIdList);
                 //删除房间
                 matchCache.DeleteRoom(room);
             }

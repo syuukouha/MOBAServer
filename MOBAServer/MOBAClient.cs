@@ -14,15 +14,22 @@ namespace MOBAServer
         /// <summary>
         /// 账号逻辑
         /// </summary>
-        private IOpHandler accountOpHandler;
+        private AccountHandler accountHandler;
         /// <summary>
         /// 角色
         /// </summary>
-        private IOpHandler playerOpHandler;
+        private PlayerHandler playerHandler;
+        /// <summary>
+        /// 选人
+        /// </summary>
+        private SelectHandler selectHandler;
+
         public MOBAClient(InitRequest initRequest) : base(initRequest)
         {
-            accountOpHandler = new AccountHandler();
-            playerOpHandler = new PlayerHandler();
+            accountHandler = new AccountHandler();
+            playerHandler = new PlayerHandler();
+            selectHandler = new SelectHandler();
+            playerHandler.StartSelectAction = selectHandler.StartSelect;
         }
         /// <summary>
         /// 客户端请求
@@ -36,10 +43,13 @@ namespace MOBAServer
             switch (opCode)
             {
                 case OperationCode.AccountCode:
-                    accountOpHandler.OnRequest(this, subCode, operationRequest);
+                    accountHandler.OnRequest(this, subCode, operationRequest);
                     break;
                 case OperationCode.PlayerCode:
-                    playerOpHandler.OnRequest(this, subCode, operationRequest);
+                    playerHandler.OnRequest(this, subCode, operationRequest);
+                    break;
+                case OperationCode.SelectCode:
+                    selectHandler.OnRequest(this, subCode, operationRequest);
                     break;
             }
         }
@@ -51,8 +61,9 @@ namespace MOBAServer
         protected override void OnDisconnect(DisconnectReason reasonCode, string reasonDetail)
         {
             //倒序
-            playerOpHandler.OnDisConnect(this);
-            accountOpHandler.OnDisConnect(this);
+            selectHandler.OnDisConnect(this);
+            playerHandler.OnDisConnect(this);
+            accountHandler.OnDisConnect(this);
         }
     }
 }
