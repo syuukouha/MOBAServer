@@ -50,8 +50,8 @@ namespace MOBAServer.Cache
                 //房间解散
                 if (!selectRoom.IsAllEnter)
                 {
-                    DestorySelectRoom(selectRoom.ID);
                     selectRoom.Broadcast(OperationCode.SelectCode, OpSelect.Cancel, 0, "有玩家拒绝进入房间，解散当前房间",null);
+                    DestorySelectRoom(selectRoom.ID);
                 }
             } );
 
@@ -65,7 +65,7 @@ namespace MOBAServer.Cache
         {
             //移除房间ID和房间模型的关系，如果找不到该房间就返回
             SelectRoom selectRoom;
-            if (Rooms.TryRemove(roomID, out selectRoom))
+            if (!Rooms.TryRemove(roomID, out selectRoom))
                 return;
             //移除玩家ID和房间ID的关系
             foreach (KeyValuePair<int, SelectModel> selectRoomRedTeamSelectModel in selectRoom._redTeamSelectModels)
@@ -102,6 +102,62 @@ namespace MOBAServer.Cache
                 return null;
             selectRoom.EnterRoom(playerID, client);
             return selectRoom;
+        }
+
+        /// <summary>
+        /// 选择英雄
+        /// </summary>
+        /// <returns></returns>
+        public SelectRoom Select(int playerID,int heroID)
+        {
+            //获取房间ID
+            int roomID;
+            if (!roomIDs.TryGetValue(playerID, out roomID))
+                return null;
+            //根据房间ID获取房间
+            SelectRoom selectRoom;
+            if (!Rooms.TryGetValue(roomID, out selectRoom))
+                return null;
+            return selectRoom.Select(playerID,heroID) ? selectRoom : null;
+        }
+        /// <summary>
+        /// 确认选择
+        /// </summary>
+        /// <param name="playerID"></param>
+        /// <returns></returns>
+        public SelectRoom Ready(int playerID)
+        {
+            //获取房间ID
+            int roomID;
+            if (!roomIDs.TryGetValue(playerID, out roomID))
+                return null;
+            //根据房间ID获取房间
+            SelectRoom selectRoom;
+            if (!Rooms.TryGetValue(roomID, out selectRoom))
+                return null;
+            return selectRoom.Ready(playerID) ? selectRoom : null;
+        }
+        /// <summary>
+        /// 玩家下线
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="playerID"></param>
+        public void OffLine(MOBAClient client, int playerID)
+        {
+            //获取房间ID
+            int roomID;
+            if (!roomIDs.TryGetValue(playerID, out roomID))
+                return;
+            //根据房间ID获取房间
+            SelectRoom selectRoom;
+            if (!Rooms.TryGetValue(roomID, out selectRoom))
+                return;
+            //移除退出的客户端
+            selectRoom.ClientList.Remove(client);
+            //给剩余的客户端发一个消息：有人退出房间，回到主界面
+            selectRoom.Broadcast(OperationCode.SelectCode, OpSelect.Cancel, 2, "有玩家退出", null);
+            //销毁房间
+            DestorySelectRoom(selectRoom.ID);
         }
     }
 }

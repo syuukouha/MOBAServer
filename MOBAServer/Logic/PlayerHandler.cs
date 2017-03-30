@@ -67,8 +67,10 @@ namespace MOBAServer.Logic
         public void OnDisConnect(MOBAClient client)
         {
             //下线的时候，通知在线好友，显示离线状态
+            //***这里要通过客户端获取到玩家账号ID，再用账号ID获取到玩家ID，否则会报空
             int accountID = accountCache.GetID(client);
             int playerID = playerCache.GetID(accountID);
+
             PlayerModel playerModel = playerCache.GetPlayerModel(playerID);
             if (playerModel != null)
             {

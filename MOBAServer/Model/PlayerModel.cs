@@ -133,7 +133,7 @@ namespace MOBAServer.Model
             WinCount = 0;
             LoseCount = 0;
             RunCount = 0;
-            HeroIdList = new List<int> {0, 1};
+            HeroIdList = new List<int> {1, 2};
             FriendIdList = new List<int>();
         }
     }

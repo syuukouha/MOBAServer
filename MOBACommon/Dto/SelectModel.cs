@@ -5,6 +5,9 @@ using System.Text;
 
 namespace MOBACommon.Dto
 {
+    /// <summary>
+    ///房间数据模型
+    /// </summary>
     public class SelectModel
     {
         /// <summary>

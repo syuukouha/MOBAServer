@@ -33,6 +33,11 @@ namespace MOBAServer.Room
         {
             get { return _enterCount == Count; }
         }
+        //是否全部准备
+        public bool IsAllReady
+        {
+            get { return _readyCount == _enterCount; }
+        }
 
         public SelectRoom(int id, int count) : base(id, count)
         {
@@ -87,6 +92,63 @@ namespace MOBAServer.Room
             ClientList.Add(client);
             //更新进入人数
             _enterCount++;
+        }
+        /// <summary>
+        /// 选择英雄
+        /// </summary>
+        /// <param name="playerID"></param>
+        /// <param name="heroID"></param>
+        public bool Select(int playerID, int heroID)
+        {
+            //判断队友有没有选择
+            if (_redTeamSelectModels.ContainsKey(playerID))
+            {
+                foreach (var value in _redTeamSelectModels.Values)
+                {
+                    if (value.HeroID == heroID)
+                        return false;
+                }
+                //可以选择
+                _redTeamSelectModels[playerID].HeroID = heroID;
+            }
+            if (_blueTeamSelectModels.ContainsKey(playerID))
+            {
+                foreach (var value in _blueTeamSelectModels.Values)
+                {
+                    if (value.HeroID == heroID)
+                        return false;
+                }
+                _blueTeamSelectModels[playerID].HeroID = heroID;
+            }
+            return true;
+        }
+        /// <summary>
+        /// 确认选择
+        /// </summary>
+        /// <param name="playerID"></param>
+        /// <returns></returns>
+        public bool Ready(int playerID)
+        {
+            if (_redTeamSelectModels.ContainsKey(playerID))
+            {
+                SelectModel selectModel = _redTeamSelectModels[playerID];
+                //检测有没有选英雄
+                if (selectModel.HeroID == -1)
+                    return false;
+                selectModel.IsReady = true;
+                //更新准备的人数
+                _readyCount++;
+            }else if (_blueTeamSelectModels.ContainsKey(playerID))
+            {
+                SelectModel selectModel = _blueTeamSelectModels[playerID];
+                //检测有没有选英雄
+                if (selectModel.HeroID == -1)
+                    return false;
+                selectModel.IsReady = true;
+                //更新准备的人数
+                _readyCount++;
+            }
+            return true;
         }
     }
 

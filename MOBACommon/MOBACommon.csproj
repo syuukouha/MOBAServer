@@ -45,6 +45,7 @@
     <Compile Include="Codes\OperationCode.cs" />
     <Compile Include="Codes\OpPlayer.cs" />
     <Compile Include="Codes\OpSelect.cs" />
+    <Compile Include="Config\HeroData.cs" />
     <Compile Include="Dto\AccountDto.cs" />
     <Compile Include="Dto\FriendDto.cs" />
     <Compile Include="Dto\PlayerDto.cs" />
