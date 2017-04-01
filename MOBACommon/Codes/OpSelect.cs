@@ -27,5 +27,13 @@ namespace MOBACommon.Codes
         /// 获取房间信息
         /// </summary>
         public const byte GetInfo = 4;
+        /// <summary>
+        /// 聊天
+        /// </summary>
+        public const byte Chat = 5;
+        /// <summary>
+        /// 开始战斗
+        /// </summary>
+        public const byte StartBattle = 6;
     }
 }

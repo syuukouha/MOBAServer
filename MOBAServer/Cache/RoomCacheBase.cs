@@ -31,5 +31,22 @@ namespace MOBAServer.Cache
         /// </summary>
         protected int index = 0;
         #endregion
+        /// <summary>
+        /// 获取房间
+        /// </summary>
+        /// <param name="playerID"></param>
+        /// <returns></returns>
+        public TRoom GetRoom(int playerID)
+        {
+            //获取房间ID
+            int roomID;
+            if (!roomIDs.TryGetValue(playerID, out roomID))
+                return null;
+            //根据房间ID获取房间
+            TRoom Room;
+            if (!Rooms.TryGetValue(roomID, out Room))
+                return null;
+            return Room;
+        }
     }
 }

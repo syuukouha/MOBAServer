@@ -10,7 +10,10 @@ namespace MOBACommon.Config
     /// </summary>
     public class HeroData
     {
-        private static Dictionary<int,HeroModel> _heroModels = new Dictionary<int, HeroModel>();
+        /// <summary>
+        /// 英雄ID和英雄数据模型的映射
+        /// </summary>
+        private static Dictionary<int, HeroDataModel> _heroModels = new Dictionary<int, HeroDataModel>();
         static HeroData()
         {
             //英雄ID范围：1-99
@@ -18,10 +21,14 @@ namespace MOBACommon.Config
             CreateHero(1, "瞎子", 60, 20, 300, 100, 10, 3, 50, 10, 1, new[] {1001, 1002, 1003, 1004});
             CreateHero(2, "狐狸", 50, 10, 100, 300, 8, 2, 40, 10, 5, new[] {2001, 2002, 2003, 2004});
         }
-
-        public static HeroModel GetHeroModel(int heroID)
+        /// <summary>
+        /// 根据英雄ID获取英雄静态数据模型
+        /// </summary>
+        /// <param name="heroID"></param>
+        /// <returns></returns>
+        public static HeroDataModel GetHeroDataModel(int heroID)
         {
-            HeroModel heroModel = null;
+            HeroDataModel heroModel = null;
             _heroModels.TryGetValue(heroID, out heroModel);
             return heroModel;
         }
@@ -44,7 +51,7 @@ namespace MOBACommon.Config
         private static void CreateHero(int id, string name, int hp, int growUpHP, int mp, int growUpMP, int baseAttack,
             int baseDefense, int growUpAttack, int growUpDefense, double attackDistance, int[] skillID)
         {
-            HeroModel heroModel = new HeroModel(id, name, hp, growUpHP, mp, growUpMP, baseAttack,
+            HeroDataModel heroModel = new HeroDataModel(id, name, hp, growUpHP, mp, growUpMP, baseAttack,
                 baseDefense, growUpAttack, growUpDefense, attackDistance, skillID);
             //保存英雄数据
             _heroModels.Add(heroModel.ID, heroModel);
@@ -53,7 +60,7 @@ namespace MOBACommon.Config
     /// <summary>
     /// 英雄的数据模型
     /// </summary>
-    public class HeroModel
+    public class HeroDataModel
     {
         /// <summary>
         /// 英雄编号
@@ -106,12 +113,12 @@ namespace MOBACommon.Config
         public int[] SkillID;
 
 
-        public HeroModel()
+        public HeroDataModel()
         {
             
         }
 
-        public HeroModel(int id, string name, int hp, int growUpHP, int mp, int growUpMP, int baseAttack,
+        public HeroDataModel(int id, string name, int hp, int growUpHP, int mp, int growUpMP, int baseAttack,
             int baseDefense, int growUpAttack, int growUpDefense, double attackDistance, int[] skillID)
         {
             this.ID = id;

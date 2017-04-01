@@ -23,14 +23,14 @@ namespace MOBAServer.Cache
             if (rooms.TryDequeue(out selectRoom))
             {
                 //有就初始化房间
-                selectRoom.InitRoom(redTeam, blueTeam);
+                selectRoom.Init(redTeam, blueTeam);
             }
             else
             {
                 //没有就构建房间
                 selectRoom = new SelectRoom(index++, count);
                 //初始化房间
-                selectRoom.InitRoom(redTeam, blueTeam);
+                selectRoom.Init(redTeam, blueTeam);
             }
             //绑定玩家ID和房间ID
             foreach (int id in redTeam)
@@ -68,20 +68,16 @@ namespace MOBAServer.Cache
             if (!Rooms.TryRemove(roomID, out selectRoom))
                 return;
             //移除玩家ID和房间ID的关系
-            foreach (KeyValuePair<int, SelectModel> selectRoomRedTeamSelectModel in selectRoom._redTeamSelectModels)
+            foreach (KeyValuePair<int, SelectModel> selectRoomRedTeamSelectModel in selectRoom.RedTeamSelectModels)
             {
                 roomIDs.Remove(selectRoomRedTeamSelectModel.Key);
             }
-            foreach (KeyValuePair<int, SelectModel> selectRoomBlueTeamSelectModel in selectRoom._blueTeamSelectModels)
+            foreach (KeyValuePair<int, SelectModel> selectRoomBlueTeamSelectModel in selectRoom.BlueTeamSelectModels)
             {
                 roomIDs.Remove(selectRoomBlueTeamSelectModel.Key);
             }
             //清空房间内的数据
-            selectRoom._redTeamSelectModels.Clear();
-            selectRoom._blueTeamSelectModels.Clear();
-            selectRoom._enterCount = 0;
-            selectRoom._readyCount = 0;
-            selectRoom.ClientList.Clear();
+            selectRoom.Clear();
             //入重用队列
             rooms.Enqueue(selectRoom);
         }
@@ -92,15 +88,11 @@ namespace MOBAServer.Cache
         /// <param name="client"></param>
         public SelectRoom Enter(int playerID, MOBAClient client)
         {
-            //获取房间ID
-            int roomID;
-            if (!roomIDs.TryGetValue(playerID, out roomID))
+            //获取房间
+            SelectRoom selectRoom = GetRoom(playerID);
+            if (selectRoom == null)
                 return null;
-            //根据房间ID获取房间
-            SelectRoom selectRoom;
-            if(!Rooms.TryGetValue(roomID,out selectRoom))
-                return null;
-            selectRoom.EnterRoom(playerID, client);
+            selectRoom.Enter(playerID, client);
             return selectRoom;
         }
 
@@ -110,13 +102,9 @@ namespace MOBAServer.Cache
         /// <returns></returns>
         public SelectRoom Select(int playerID,int heroID)
         {
-            //获取房间ID
-            int roomID;
-            if (!roomIDs.TryGetValue(playerID, out roomID))
-                return null;
-            //根据房间ID获取房间
-            SelectRoom selectRoom;
-            if (!Rooms.TryGetValue(roomID, out selectRoom))
+            //获取房间
+            SelectRoom selectRoom = GetRoom(playerID);
+            if (selectRoom == null)
                 return null;
             return selectRoom.Select(playerID,heroID) ? selectRoom : null;
         }
@@ -127,13 +115,9 @@ namespace MOBAServer.Cache
         /// <returns></returns>
         public SelectRoom Ready(int playerID)
         {
-            //获取房间ID
-            int roomID;
-            if (!roomIDs.TryGetValue(playerID, out roomID))
-                return null;
-            //根据房间ID获取房间
-            SelectRoom selectRoom;
-            if (!Rooms.TryGetValue(roomID, out selectRoom))
+            //获取房间
+            SelectRoom selectRoom = GetRoom(playerID);
+            if (selectRoom == null)
                 return null;
             return selectRoom.Ready(playerID) ? selectRoom : null;
         }
@@ -144,16 +128,12 @@ namespace MOBAServer.Cache
         /// <param name="playerID"></param>
         public void OffLine(MOBAClient client, int playerID)
         {
-            //获取房间ID
-            int roomID;
-            if (!roomIDs.TryGetValue(playerID, out roomID))
+            //获取房间
+            SelectRoom selectRoom = GetRoom(playerID);
+            if (selectRoom == null)
                 return;
-            //根据房间ID获取房间
-            SelectRoom selectRoom;
-            if (!Rooms.TryGetValue(roomID, out selectRoom))
-                return;
-            //移除退出的客户端
-            selectRoom.ClientList.Remove(client);
+            //离开房间
+            selectRoom.Leave(client);
             //给剩余的客户端发一个消息：有人退出房间，回到主界面
             selectRoom.Broadcast(OperationCode.SelectCode, OpSelect.Cancel, 2, "有玩家退出", null);
             //销毁房间

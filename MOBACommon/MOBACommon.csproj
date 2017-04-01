@@ -42,14 +42,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Codes\OpAccount.cs" />
+    <Compile Include="Codes\OpBattle.cs" />
     <Compile Include="Codes\OperationCode.cs" />
     <Compile Include="Codes\OpPlayer.cs" />
     <Compile Include="Codes\OpSelect.cs" />
     <Compile Include="Config\HeroData.cs" />
+    <Compile Include="Config\BuildData.cs" />
     <Compile Include="Dto\AccountDto.cs" />
     <Compile Include="Dto\FriendDto.cs" />
+    <Compile Include="Dto\HeroModel.cs" />
     <Compile Include="Dto\PlayerDto.cs" />
     <Compile Include="Dto\SelectModel.cs" />
+    <Compile Include="Dto\SoldierModel.cs" />
+    <Compile Include="Dto\BuildModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

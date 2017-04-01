@@ -22,5 +22,9 @@ namespace MOBACommon.Codes
         /// 选人
         /// </summary>
         public const byte SelectCode = 2;
+        /// <summary>
+        /// 对战
+        /// </summary>
+        public const byte BattleCode = 3;
     }
 }

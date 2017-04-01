@@ -23,13 +23,21 @@ namespace MOBAServer
         /// 选人
         /// </summary>
         private SelectHandler selectHandler;
+        /// <summary>
+        /// 对战
+        /// </summary>
+        private BattleHandler battleHandler;
 
         public MOBAClient(InitRequest initRequest) : base(initRequest)
         {
             accountHandler = new AccountHandler();
             playerHandler = new PlayerHandler();
             selectHandler = new SelectHandler();
+            battleHandler = new BattleHandler();
+
+            //添加事件监听
             playerHandler.StartSelectAction = selectHandler.StartSelect;
+            selectHandler.StartBattleAction = battleHandler.StartBattle;
         }
         /// <summary>
         /// 客户端请求
@@ -51,6 +59,9 @@ namespace MOBAServer
                 case OperationCode.SelectCode:
                     selectHandler.OnRequest(this, subCode, operationRequest);
                     break;
+                case OperationCode.BattleCode:
+                    battleHandler.OnRequest(this, subCode, operationRequest);
+                    break;
             }
         }
         /// <summary>
@@ -61,6 +72,7 @@ namespace MOBAServer
         protected override void OnDisconnect(DisconnectReason reasonCode, string reasonDetail)
         {
             //倒序
+            battleHandler.OnDisConnect(this);
             selectHandler.OnDisConnect(this);
             playerHandler.OnDisConnect(this);
             accountHandler.OnDisConnect(this);

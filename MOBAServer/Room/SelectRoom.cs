@@ -14,11 +14,11 @@ namespace MOBAServer.Room
         /// <summary>
         /// 队伍1玩家ID对应的选择模型
         /// </summary>
-        public Dictionary<int, SelectModel> _redTeamSelectModels;
+        public Dictionary<int, SelectModel> RedTeamSelectModels;
         /// <summary>
         /// 队伍2玩家ID对应的选择模型
         /// </summary>
-        public Dictionary<int, SelectModel> _blueTeamSelectModels;
+        public Dictionary<int, SelectModel> BlueTeamSelectModels;
         /// <summary>
         /// 进入的数量
         /// </summary>
@@ -41,8 +41,8 @@ namespace MOBAServer.Room
 
         public SelectRoom(int id, int count) : base(id, count)
         {
-            _redTeamSelectModels = new Dictionary<int, SelectModel>();
-            _blueTeamSelectModels = new Dictionary<int, SelectModel>();
+            RedTeamSelectModels = new Dictionary<int, SelectModel>();
+            BlueTeamSelectModels = new Dictionary<int, SelectModel>();
             _enterCount = 0;
             _readyCount = 0;
         }
@@ -51,7 +51,7 @@ namespace MOBAServer.Room
         /// </summary>
         /// <param name="redTeam"></param>
         /// <param name="blueTeam"></param>
-        public void InitRoom(List<int> redTeam, List<int> blueTeam)
+        public void Init(List<int> redTeam, List<int> blueTeam)
         {
             //初始化房间
             PlayerModel playerModel;
@@ -61,27 +61,27 @@ namespace MOBAServer.Room
                 playerModel = Caches.Player.GetPlayerModel(id);
                 selectModel = new SelectModel(playerModel.Id, playerModel.Name);
                 //添加到字典
-                _redTeamSelectModels.Add(playerModel.Id, selectModel);
+                RedTeamSelectModels.Add(playerModel.Id, selectModel);
             }
             foreach (int id in blueTeam)
             {
                 playerModel = Caches.Player.GetPlayerModel(id);
                 selectModel = new SelectModel(playerModel.Id,playerModel.Name);
                 //添加到字典
-                _blueTeamSelectModels.Add(playerModel.Id, selectModel);
+                BlueTeamSelectModels.Add(playerModel.Id, selectModel);
             }
         }
         /// <summary>
         /// 进入房间
         /// </summary>
-        public void EnterRoom(int playerID,MOBAClient client)
+        public void Enter(int playerID,MOBAClient client)
         {
-            if (_redTeamSelectModels.ContainsKey(playerID))
+            if (RedTeamSelectModels.ContainsKey(playerID))
             {
-                _redTeamSelectModels[playerID].IsEnter = true;
-            }else if (_blueTeamSelectModels.ContainsKey(playerID))
+                RedTeamSelectModels[playerID].IsEnter = true;
+            }else if (BlueTeamSelectModels.ContainsKey(playerID))
             {
-                _blueTeamSelectModels[playerID].IsEnter = true;
+                BlueTeamSelectModels[playerID].IsEnter = true;
             }
             else
             {
@@ -93,6 +93,17 @@ namespace MOBAServer.Room
             //更新进入人数
             _enterCount++;
         }
+
+        /// <summary>
+        /// 离开房间
+        /// </summary>
+        /// <param name="client"></param>
+        public void Leave(MOBAClient client)
+        {
+            //移除退出的客户端
+            if (ClientList.Contains(client))
+                ClientList.Remove(client);
+        }
         /// <summary>
         /// 选择英雄
         /// </summary>
@@ -101,24 +112,24 @@ namespace MOBAServer.Room
         public bool Select(int playerID, int heroID)
         {
             //判断队友有没有选择
-            if (_redTeamSelectModels.ContainsKey(playerID))
+            if (RedTeamSelectModels.ContainsKey(playerID))
             {
-                foreach (var value in _redTeamSelectModels.Values)
+                foreach (var value in RedTeamSelectModels.Values)
                 {
                     if (value.HeroID == heroID)
                         return false;
                 }
                 //可以选择
-                _redTeamSelectModels[playerID].HeroID = heroID;
+                RedTeamSelectModels[playerID].HeroID = heroID;
             }
-            if (_blueTeamSelectModels.ContainsKey(playerID))
+            if (BlueTeamSelectModels.ContainsKey(playerID))
             {
-                foreach (var value in _blueTeamSelectModels.Values)
+                foreach (var value in BlueTeamSelectModels.Values)
                 {
                     if (value.HeroID == heroID)
                         return false;
                 }
-                _blueTeamSelectModels[playerID].HeroID = heroID;
+                BlueTeamSelectModels[playerID].HeroID = heroID;
             }
             return true;
         }
@@ -129,18 +140,18 @@ namespace MOBAServer.Room
         /// <returns></returns>
         public bool Ready(int playerID)
         {
-            if (_redTeamSelectModels.ContainsKey(playerID))
+            if (RedTeamSelectModels.ContainsKey(playerID))
             {
-                SelectModel selectModel = _redTeamSelectModels[playerID];
+                SelectModel selectModel = RedTeamSelectModels[playerID];
                 //检测有没有选英雄
                 if (selectModel.HeroID == -1)
                     return false;
                 selectModel.IsReady = true;
                 //更新准备的人数
                 _readyCount++;
-            }else if (_blueTeamSelectModels.ContainsKey(playerID))
+            }else if (BlueTeamSelectModels.ContainsKey(playerID))
             {
-                SelectModel selectModel = _blueTeamSelectModels[playerID];
+                SelectModel selectModel = BlueTeamSelectModels[playerID];
                 //检测有没有选英雄
                 if (selectModel.HeroID == -1)
                     return false;
@@ -149,6 +160,17 @@ namespace MOBAServer.Room
                 _readyCount++;
             }
             return true;
+        }
+        /// <summary>
+        /// 清空房间数据
+        /// </summary>
+        public void Clear()
+        {
+            RedTeamSelectModels.Clear();
+            BlueTeamSelectModels.Clear();
+            _enterCount = 0;
+            _readyCount = 0;
+            ClientList.Clear();
         }
     }
 

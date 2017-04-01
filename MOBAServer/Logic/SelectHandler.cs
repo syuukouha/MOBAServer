@@ -5,7 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using LitJson;
 using MOBACommon.Codes;
+using MOBACommon.Dto;
 using MOBAServer.Cache;
+using MOBAServer.Model;
 using MOBAServer.Room;
 using Photon.SocketServer;
 
@@ -13,6 +15,10 @@ namespace MOBAServer.Logic
 {
     public class SelectHandler:SingleSend,IOpHandler
     {
+        /// <summary>
+        /// 开始对战的事件
+        /// </summary>
+        public Action<List<SelectModel>, List<SelectModel>> StartBattleAction;
         //缓存
         private SelectCache selectCache = Caches.Select;
         private PlayerCache playerCache = Caches.Player;
@@ -32,8 +38,26 @@ namespace MOBAServer.Logic
                 case OpSelect.Ready:
                     OnReady(client);
                     break;
+                case OpSelect.Chat:
+                    OnChat(client, request[0].ToString());
+                    break;
             }
         }
+
+        private void OnChat(MOBAClient client, string text)
+        {
+            //给当前客户端所在的房间内的所有人发一条消息
+            PlayerModel playerModel = playerCache.GetPlayerModel(client);
+            if (playerModel == null)
+                return;
+            SelectRoom selectRoom = selectCache.GetRoom(playerModel.Id);
+            if (selectRoom != null)
+            {
+                string str = string.Format("{0}:{1}", playerModel.Name, text);
+                selectRoom.Broadcast(OperationCode.SelectCode, OpSelect.Chat, 0, "有玩家发言了", null, str);
+            }
+        }
+
         /// <summary>
         /// 玩家确认选择（准备）
         /// </summary>
@@ -54,6 +78,11 @@ namespace MOBAServer.Logic
             //检测 是否全部人都准备，都准备就进入战斗
             if (selectRoom.IsAllReady)
             {
+                StartBattleAction(selectRoom.RedTeamSelectModels.Values.ToList(),
+                    selectRoom.BlueTeamSelectModels.Values.ToList());
+                //给客户端发送消息:准备战斗 切换场景
+                selectRoom.Broadcast(OperationCode.SelectCode, OpSelect.StartBattle, 0, "准备进入战斗场景", null);
+
                 //销毁当前房间
                 selectCache.DestorySelectRoom(selectRoom.ID);
             }
@@ -89,8 +118,8 @@ namespace MOBAServer.Logic
             //进入成功
             //先给客户端发一个房间模型，再给房间内的客户端发一条消息：有人进入房间
             Send(client, OperationCode.SelectCode, OpSelect.GetInfo, 0, "获取房间信息",
-                JsonMapper.ToJson(selectRoom._redTeamSelectModels.Values.ToArray()),
-                JsonMapper.ToJson(selectRoom._blueTeamSelectModels.Values.ToArray()));
+                JsonMapper.ToJson(selectRoom.RedTeamSelectModels.Values.ToArray()),
+                JsonMapper.ToJson(selectRoom.BlueTeamSelectModels.Values.ToArray()));
             selectRoom.Broadcast(OperationCode.SelectCode, OpSelect.Enter, 0, "有玩家进入房间", client, playerID);
             //检测是否全部都进入房间
             if (selectRoom.IsAllEnter)

@@ -72,7 +72,9 @@ namespace MOBAServer.Cache
         /// <param name="client"></param>
         public int GetID(MOBAClient client)
         {
-            return _onLinePlayers[client];
+            if (_onLinePlayers.ContainsKey(client))
+                return _onLinePlayers[client];
+            return -1;
         }
         /// <summary>
         /// 获取玩家数据
@@ -81,7 +83,9 @@ namespace MOBAServer.Cache
         /// <returns></returns>
         public PlayerModel GetPlayerModel(int playerID)
         {
-            return playerModels[playerID];
+            if (playerModels.ContainsKey(playerID))
+                return playerModels[playerID];
+            return null;
         }
         /// <summary>
         /// 获取玩家数据
@@ -104,7 +108,9 @@ namespace MOBAServer.Cache
         /// <returns></returns>
         public PlayerModel GetPlayerModel(MOBAClient client)
         {
-            return playerModels[_onLinePlayers[client]];
+            if (_onLinePlayers.ContainsKey(client))
+                return playerModels[_onLinePlayers[client]];
+            return null;
         }
         /// <summary>
         /// 根据玩家ID获取对应的客户端
