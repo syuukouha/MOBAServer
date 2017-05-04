@@ -59,6 +59,7 @@ namespace MOBACommon.Dto
             this.TeamID = teamID;
             this.Name = name;
             this.MaxHP = maxHP;
+            this.CurrentHP = maxHP;
             this.Attack = attack;
             this.Defence = defence;
             this.AttackDistance = attackDistance;

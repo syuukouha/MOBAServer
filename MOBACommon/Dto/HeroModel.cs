@@ -43,6 +43,19 @@ namespace MOBACommon.Dto
         /// </summary>
         public int Point { get; set; }
 
+        /// <summary>
+        /// 补兵
+        /// </summary>
+        public int CS { get; set; }
+        /// <summary>
+        /// 击杀次数
+        /// </summary>
+        public int Kill { get; set; }
+        /// <summary>
+        /// 死亡次数
+        /// </summary>
+        public int Dead { get; set; }
+
         public HeroModel()
         {
             
@@ -51,7 +64,7 @@ namespace MOBACommon.Dto
         public HeroModel(int id, int typeID, int teamID, string name, int maxHP, int attack, int defence,
             double attackDistance,int maxMP,int[] skills) : base(id, typeID, teamID, name, maxHP, attack, defence, attackDistance)
         {
-            this.MaxMP = maxHP;
+            this.MaxMP = maxMP;
             this.CurrentMP = maxMP;
             this.Lv = 1;
             this.Exp = 0;
@@ -59,6 +72,9 @@ namespace MOBACommon.Dto
             this.Equipments = new int[6];
             this.Skills = skills;
             Point = 1;
+            CS = 0;
+            Kill = 0;
+            Dead = 0;
         }
     }
 }

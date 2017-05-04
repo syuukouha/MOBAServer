@@ -15,23 +15,49 @@ namespace MOBAServer.Room
     {
         #region RedTeam
         //英雄
-        public Dictionary<int,HeroModel> RedTeamHeroModels = new Dictionary<int, HeroModel>();
+        private Dictionary<int,HeroModel> _redTeamHeroModels = new Dictionary<int, HeroModel>();
         //小兵
-        public Dictionary<int,SoldierModel> RedTeamSoldierModels = new Dictionary<int, SoldierModel>();
+        private Dictionary<int,SoldierModel> _redTeamSoldierModels = new Dictionary<int, SoldierModel>();
         //防御塔
-        public Dictionary<int, BuildModel> RedTeamBuildModels = new Dictionary<int, BuildModel>();
+        private Dictionary<int, BuildModel> _redTeamBuildModels = new Dictionary<int, BuildModel>();
 
         #endregion
 
         #region BlueTeam
         //英雄
-        public Dictionary<int, HeroModel> BlueTeamHeroModels = new Dictionary<int, HeroModel>();
+        private Dictionary<int, HeroModel> _blueTeamHeroModels = new Dictionary<int, HeroModel>();
         //小兵
-        public Dictionary<int, SoldierModel> BlueTeamSoldierModels = new Dictionary<int, SoldierModel>();
+        private Dictionary<int, SoldierModel> _blueTeamSoldierModels = new Dictionary<int, SoldierModel>();
         //防御塔
-        public Dictionary<int, BuildModel> BlueTeamBuildModels = new Dictionary<int, BuildModel>();
+        private Dictionary<int, BuildModel> _blueTeamBuildModels = new Dictionary<int, BuildModel>();
         #endregion
 
+        /// <summary>
+        /// 取得所有的英雄
+        /// </summary>
+        public HeroModel[] HeroModels
+        {
+            get
+            {
+                List<HeroModel> heroModels = new List<HeroModel>();
+                heroModels.AddRange(_redTeamHeroModels.Values);
+                heroModels.AddRange(_blueTeamHeroModels.Values);
+                return heroModels.ToArray();
+            }
+        }
+        /// <summary>
+        /// 取得所有的建筑
+        /// </summary>
+        public BuildModel[] BuildModels
+        {
+            get
+            {
+                List<BuildModel> buildModels = new List<BuildModel>();
+                buildModels.AddRange(_redTeamBuildModels.Values);
+                buildModels.AddRange(_blueTeamBuildModels.Values);
+                return buildModels.ToArray();
+            }
+        }
         /// <summary>
         /// 是否全部进入
         /// </summary>
@@ -59,34 +85,32 @@ namespace MOBAServer.Room
         /// <summary>
         /// 初始化房间
         /// </summary>
-        /// <param name="redTeam"></param>
-        /// <param name="blueTeam"></param>
-        public void Init(List<SelectModel> redTeam, List<SelectModel> blueTeam)
+        /// <param name="redTeamSelectModels"></param>
+        /// <param name="blueTeamSelectModels"></param>
+        public void Init(List<SelectModel> redTeamSelectModels, List<SelectModel> blueTeamSelectModels)
         {
-            //玩家数量
-            this.Count = redTeam.Count + blueTeam.Count;
             //初始化英雄数据
-            foreach (SelectModel selectModel in redTeam)
+            foreach (SelectModel selectModel in redTeamSelectModels)
             {
-                RedTeamHeroModels.Add(selectModel.PlayerID, GetHeroModel(selectModel, 1));
+                _redTeamHeroModels.Add(selectModel.PlayerID, GetHeroModel(selectModel, 1));
             }
-            foreach (SelectModel selectModel in blueTeam)
+            foreach (SelectModel selectModel in blueTeamSelectModels)
             {
-                RedTeamHeroModels.Add(selectModel.PlayerID, GetHeroModel(selectModel,2));
+                _blueTeamHeroModels.Add(selectModel.PlayerID, GetHeroModel(selectModel,2));
             }
             //初始化建筑物数据   红队：-10 蓝队：-20
 
-            RedTeamBuildModels.Add(-10, GetBuildModel(-10, BuildData.Base, 1));
-            RedTeamBuildModels.Add(-11, GetBuildModel(-11, BuildData.MilitaryCamp, 1));
-            RedTeamBuildModels.Add(-12, GetBuildModel(-12, BuildData.MilitaryCamp, 1));
-            RedTeamBuildModels.Add(-13, GetBuildModel(-13, BuildData.Tower, 1));
-            RedTeamBuildModels.Add(-14, GetBuildModel(-14, BuildData.Tower, 1));
+            _redTeamBuildModels.Add(-10, GetBuildModel(-10, BuildData.Base, 1));
+            _redTeamBuildModels.Add(-11, GetBuildModel(-11, BuildData.MilitaryCamp, 1));
+            _redTeamBuildModels.Add(-12, GetBuildModel(-12, BuildData.MilitaryCamp, 1));
+            _redTeamBuildModels.Add(-13, GetBuildModel(-13, BuildData.Tower, 1));
+            _redTeamBuildModels.Add(-14, GetBuildModel(-14, BuildData.Tower, 1));
 
-            BlueTeamBuildModels.Add(-20, GetBuildModel(-20, BuildData.Base, 2));
-            BlueTeamBuildModels.Add(-21, GetBuildModel(-21, BuildData.MilitaryCamp, 2));
-            BlueTeamBuildModels.Add(-22, GetBuildModel(-22, BuildData.MilitaryCamp, 2));
-            BlueTeamBuildModels.Add(-23, GetBuildModel(-23, BuildData.Tower, 2));
-            BlueTeamBuildModels.Add(-24, GetBuildModel(-24, BuildData.Tower, 2));
+            _blueTeamBuildModels.Add(-20, GetBuildModel(-20, BuildData.Base, 2));
+            _blueTeamBuildModels.Add(-21, GetBuildModel(-21, BuildData.MilitaryCamp, 2));
+            _blueTeamBuildModels.Add(-22, GetBuildModel(-22, BuildData.MilitaryCamp, 2));
+            _blueTeamBuildModels.Add(-23, GetBuildModel(-23, BuildData.Tower, 2));
+            _blueTeamBuildModels.Add(-24, GetBuildModel(-24, BuildData.Tower, 2));
 
 
             //初始化小兵数据
@@ -145,11 +169,11 @@ namespace MOBAServer.Room
                 SoldierModel soldierModel = new SoldierModel();
                 //TODO
                 //添加映射
-                RedTeamSoldierModels.Add(soldierModel.ID, soldierModel);
+                _redTeamSoldierModels.Add(soldierModel.ID, soldierModel);
                 soldiers.Add(soldierModel);
 
                 soldierModel = new SoldierModel();
-                BlueTeamSoldierModels.Add(soldierModel.ID, soldierModel);
+                _blueTeamSoldierModels.Add(soldierModel.ID, soldierModel);
                 soldiers.Add(soldierModel);
 
                 //自身调用自身，无限递归
@@ -179,12 +203,12 @@ namespace MOBAServer.Room
         /// </summary>
         public void Clear()
         {
-            RedTeamHeroModels.Clear();
-            RedTeamBuildModels.Clear();
-            RedTeamSoldierModels.Clear();
-            BlueTeamHeroModels.Clear();
-            BlueTeamBuildModels.Clear();
-            BlueTeamSoldierModels.Clear();
+            _redTeamHeroModels.Clear();
+            _redTeamBuildModels.Clear();
+            _redTeamSoldierModels.Clear();
+            _blueTeamHeroModels.Clear();
+            _blueTeamBuildModels.Clear();
+            _blueTeamSoldierModels.Clear();
             LeaveClients.Clear();
             ClientList.Clear();
         }

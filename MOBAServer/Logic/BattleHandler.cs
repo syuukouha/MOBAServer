@@ -26,9 +26,29 @@ namespace MOBAServer.Logic
                 case OpBattle.Enter:
                     OnEnter(client, (int) request[0]);
                     break;
+                case OpBattle.Walk:
+                    OnWalk(client, (float)request[0], (float)request[1], (float)request[2]);
+                    break;
 
             }
         }
+        /// <summary>
+        /// 玩家移动
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="v1"></param>
+        /// <param name="v2"></param>
+        /// <param name="v3"></param>
+        private void OnWalk(MOBAClient client, float x, float y, float z)
+        {
+            int playerID = playerCache.GetID(client);
+            BattleRoom battleRoom = battleCache.GetRoom(playerID);
+            if (battleRoom == null)
+                return;
+            //给每一个客户端发送谁移动到哪的信息
+            battleRoom.Broadcast(OperationCode.BattleCode, OpBattle.Walk, 0, "有玩家移动", null, playerID, x, y, z);
+        }
+
         /// <summary>
         /// 进入战斗
         /// </summary>
@@ -44,8 +64,8 @@ namespace MOBAServer.Logic
                 return;
             //给每一个客户端发送战斗房间的信息
             battleRoom.Broadcast(OperationCode.BattleCode, OpBattle.GetInfo, 0, "加载战斗场景数据", null,
-                JsonMapper.ToJson(battleRoom.RedTeamHeroModels.Values.ToArray()), JsonMapper.ToJson(battleRoom.RedTeamHeroModels.Values.ToArray()),
-                JsonMapper.ToJson(battleRoom.BlueTeamHeroModels.Values.ToArray()), JsonMapper.ToJson(battleRoom.BlueTeamBuildModels.Values.ToArray()));
+                JsonMapper.ToJson(battleRoom.HeroModels),
+                JsonMapper.ToJson(battleRoom.BuildModels));
 
         }
 

@@ -15,5 +15,9 @@ namespace MOBACommon.Codes
         /// 获取数据
         /// </summary>
         public const byte GetInfo = 1;
+        /// <summary>
+        /// 移动
+        /// </summary>
+        public const byte Walk = 2;
     }
 }

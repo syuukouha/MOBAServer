@@ -14,20 +14,20 @@ namespace MOBAServer.Cache
         /// </summary>
         /// <param name="redSelectRooms"></param>
         /// <param name="blueSelectRooms"></param>
-        public void CreateBattleRoom(List<SelectModel> redRoom, List<SelectModel> blueRoom)
+        public void CreateBattleRoom(List<SelectModel> redTeamSelectModels, List<SelectModel> blueTeamSelectModels)
         {
             BattleRoom battleRoom;
-            //检测有没有可重用的房间
-            if(!rooms.TryDequeue(out battleRoom))
-                return;
-            //有就初始化房间数据
-            battleRoom.Init(redRoom, blueRoom);
+            //检测有没有可重用的房间,没有就实例化一个
+            if (!rooms.TryDequeue(out battleRoom))
+                battleRoom = new BattleRoom(index++, redTeamSelectModels.Count + blueTeamSelectModels.Count);
+            //初始化房间数据
+            battleRoom.Init(redTeamSelectModels, blueTeamSelectModels);
             //添加映射关系
-            foreach (SelectModel selectModel in redRoom)
+            foreach (SelectModel selectModel in redTeamSelectModels)
             {
                 roomIDs.TryAdd(selectModel.PlayerID, battleRoom.ID);
             }
-            foreach (SelectModel selectModel in blueRoom)
+            foreach (SelectModel selectModel in blueTeamSelectModels)
             {
                 roomIDs.TryAdd(selectModel.PlayerID, battleRoom.ID);
             }
@@ -45,13 +45,9 @@ namespace MOBAServer.Cache
             if (!Rooms.TryRemove(roomID, out battleRoom))
                 return;
             //移除玩家ID和房间ID的关系
-            foreach (KeyValuePair<int, HeroModel> redTeamHeroModel in battleRoom.RedTeamHeroModels)
+            foreach (HeroModel heroModel in battleRoom.HeroModels)
             {
-                roomIDs.Remove(redTeamHeroModel.Key);
-            }
-            foreach (KeyValuePair<int, HeroModel> blueTeamHeroModel in battleRoom.BlueTeamHeroModels)
-            {
-                roomIDs.Remove(blueTeamHeroModel.Key);
+                roomIDs.Remove(heroModel.ID);
             }
             //清空房间内的数据
             battleRoom.Clear();

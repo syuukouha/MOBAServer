@@ -32,8 +32,8 @@ namespace MOBACommon.Config
         {
             CreateBuildDataModel(Base, 5000, -1, 100, -1, false, false, -1, "基地");
             CreateBuildDataModel(MilitaryCamp, 3000, -1, 100, -1, false, true, 300, "兵营");
-            CreateBuildDataModel(MilitaryCamp, 3000, -1, 100, -1, false, true, 300, "兵营");
-            CreateBuildDataModel(Tower, 5000, 200, 50, 5, true, false, -1, "炮塔");
+            //CreateBuildDataModel(MilitaryCamp, 3000, -1, 100, -1, false, true, 300, "兵营");
+            //CreateBuildDataModel(Tower, 5000, 200, 50, 5, true, false, -1, "炮塔");
             CreateBuildDataModel(Tower, 5000, 200, 50, 5, true, false, -1, "炮塔");
 
         }
