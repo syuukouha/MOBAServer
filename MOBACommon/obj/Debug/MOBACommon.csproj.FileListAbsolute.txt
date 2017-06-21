@@ -2,3 +2,10 @@ E:\u3d\MOBA\Assets\Plugins\MOBACommon.dll
 E:\u3d\MOBA\Assets\Plugins\MOBACommon.pdb
 E:\MOBAServer\MOBACommon\obj\Debug\MOBACommon.dll
 E:\MOBAServer\MOBACommon\obj\Debug\MOBACommon.pdb
+D:\u3d\MOBA\Assets\Plugins\MOBACommon.dll
+D:\u3d\MOBA\Assets\Plugins\MOBACommon.pdb
+D:\MOBAServer\MOBACommon\obj\Debug\MOBACommon.csprojResolveAssemblyReference.cache
+D:\MOBAServer\MOBACommon\obj\Debug\MOBACommon.dll
+D:\MOBAServer\MOBACommon\obj\Debug\MOBACommon.pdb
+D:\UnityWorkSpace\MOBAGame\Assets\Plugins\MOBACommon.dll
+D:\UnityWorkSpace\MOBAGame\Assets\Plugins\MOBACommon.pdb
